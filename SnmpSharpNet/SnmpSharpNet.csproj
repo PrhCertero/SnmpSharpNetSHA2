@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Authors>Peter Harrison</Authors>
+    <IncludeSource>True</IncludeSource>
+    <IncludeSymbols>True</IncludeSymbols>
+    <PackageId>SnmpSharpNetSHA2</PackageId>
+    <PackageLicenseUrl>https://www.gnu.org/licenses/lgpl.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/PrhCertero/SnmpSharpNetSHA2</PackageProjectUrl>
+    <PackageReleaseNotes>Available for .Net Standard</PackageReleaseNotes>
+    <PackageTags>snmpsharpnet snmp#net snmp netstandard</PackageTags>
+    <Product>Snmp#Net</Product>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/PrhCertero/SnmpSharpNetSHA2</RepositoryUrl>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>0.10.0</Version>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netstandard2.0\SnmpSharpNet.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\SnmpSharpNet.xml</DocumentationFile>
+  </PropertyGroup>
+</Project>
