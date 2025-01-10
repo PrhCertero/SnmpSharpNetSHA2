@@ -4,4 +4,5 @@ This library migrated from https://github.com/luqq/SnmpSharpNet and combined wit
 
 # Document
 [See wiki for SnmpSharpNet](https://github.com/rqx110/SnmpSharpNet/wiki)
-This library is identical apart from the capitalisation of some method names.
+
+This library is identical apart from the capitalisation of some method names and the addition of support for SHA2 authentication using SHA256, SHA384 or SHA512.

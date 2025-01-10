@@ -99,7 +99,7 @@ namespace SnmpSharpNet
     /// protocol used. Without these parameters packet class will not be able to verify the incoming packet and
     /// responses will be discarded even if they are valid.
     /// </remarks>
-    public class SnmpV3Packet: SnmpPacket
+    public class SnmpV3Packet : SnmpPacket
     {
         /// <summary>
         /// SNMP version 3 message id. Uniquly identifies the message.
@@ -110,9 +110,9 @@ namespace SnmpSharpNet
         /// </summary>
         public Int32 MessageId
         {
-            get 
+            get
             {
-                return _messageId.Value; 
+                return _messageId.Value;
             }
             set
             {
@@ -202,7 +202,7 @@ namespace SnmpSharpNet
         public SnmpV3Packet(ScopedPdu pdu)
             : this()
         {
-            if( pdu != null )
+            if (pdu != null)
             {
                 ScopedPdu = pdu;
             }
@@ -218,7 +218,7 @@ namespace SnmpSharpNet
         public SnmpV3Packet(SecureAgentParameters param)
             : this()
         {
-            if( param != null )
+            if (param != null)
             {
                 param.InitializePacket(this);
             }
@@ -235,7 +235,7 @@ namespace SnmpSharpNet
         public SnmpV3Packet(SecureAgentParameters param, ScopedPdu pdu)
             : this(param)
         {
-            if( pdu != null )
+            if (pdu != null)
             {
                 ScopedPdu = pdu;
             }
@@ -351,7 +351,7 @@ namespace SnmpSharpNet
         {
             get
             {
-                if( USM.EngineId.Length == 0 && USM.EngineTime == 0 && USM.EngineBoots == 0)
+                if (USM.EngineId.Length == 0 && USM.EngineTime == 0 && USM.EngineBoots == 0)
                 {
                     return true;
                 }
@@ -394,7 +394,7 @@ namespace SnmpSharpNet
             offset = base.Decode(buffer, length);
 
             // check for correct SNMP protocol version
-            if (_protocolVersion != (int) SnmpVersion.Ver3)
+            if (_protocolVersion != (int)SnmpVersion.Ver3)
             {
                 throw new SnmpInvalidVersionException("Expecting SNMP version 3.");
             }
@@ -402,7 +402,7 @@ namespace SnmpSharpNet
             // now grab the global message data sequence header information
             byte asnType = AsnType.ParseHeader(buffer, ref offset, out int len);
 
-            if ( asnType != SnmpConstants.SMI_SEQUENCE )
+            if (asnType != SnmpConstants.SMI_SEQUENCE)
             {
                 throw new SnmpDecodingException("Invalid sequence type when decoding global message data sequence.");
             }
@@ -545,7 +545,13 @@ namespace SnmpSharpNet
             if (MsgFlags.Authentication && USM.EngineId.Length > 0)
             {
                 // Authenticate packet
-                if (USM.AuthenticationParameters.Length != 12)
+                int expectedLength = 12;
+                IAuthenticationDigest authProto = Authentication.GetInstance(USM.Authentication);
+                if (authProto != null)
+                {
+                    expectedLength = authProto.AuthentificationHeaderLength;
+                }
+                if (USM.AuthenticationParameters.Length != expectedLength)
                 {
                     throw new SnmpAuthenticationException("Invalid authentication parameter field length.");
                 }
@@ -585,7 +591,7 @@ namespace SnmpSharpNet
 
             return offset;
         }
-    
+
         /// <summary>
         /// Encode SNMP version 3 packet
         /// </summary>
@@ -899,7 +905,7 @@ namespace SnmpSharpNet
             response.USM.EngineBoots = informPacket.USM.EngineBoots;
             response.USM.EngineId.Set(informPacket.USM.EngineId);
             response.USM.Authentication = informPacket.USM.Authentication;
-            if( response.USM.Authentication != AuthenticationDigests.None )
+            if (response.USM.Authentication != AuthenticationDigests.None)
             {
                 response.USM.AuthenticationSecret.Set(informPacket.USM.AuthenticationSecret);
             }

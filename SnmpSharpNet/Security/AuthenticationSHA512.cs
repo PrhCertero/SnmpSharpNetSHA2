@@ -19,20 +19,18 @@ using System.Security.Cryptography;
 namespace SnmpSharpNet
 {
     /// <summary>
-    /// MD5 Authentication class.
+    /// SHA-512 Authentication class.
     /// </summary>
-    public class AuthenticationMD5 : IAuthenticationDigest
+    public class AuthenticationSHA512 : IAuthenticationDigest
     {
-        private const int authenticationLength = 12;
-        private const int digestLength = 16;
-
+        private const int authenticationLength = 48;
+        private const int digestLength = 64;
         /// <summary>
-        /// Standard constructor
+        /// Standard constructor.
         /// </summary>
-        public AuthenticationMD5()
+        public AuthenticationSHA512()
         {
         }
-
         /// <summary>
         /// Authenticate packet and return authentication parameters value to the caller
         /// </summary>
@@ -44,31 +42,38 @@ namespace SnmpSharpNet
         {
             byte[] result = new byte[authenticationLength];
             byte[] authKey = PasswordToKey(authenticationSecret, engineId);
-            HMACMD5 md5 = new HMACMD5(authKey);
-            byte[] hash = md5.ComputeHash(wholeMessage);
-            // copy "authenticationLength" bytes of the hash into the wholeMessage
-            Buffer.BlockCopy(hash, 0, result, 0, authenticationLength);
+            HMACSHA512 sha = new HMACSHA512(authKey);
+            byte[] hash = sha.ComputeHash(wholeMessage);
+            // copy "authentication lenght" bytes of the hash into the wholeMessage
+            for (int i = 0; i < authenticationLength; i++)
+            {
+                result[i] = hash[i];
+            }
+            sha.Clear(); // release resources
             return result;
         }
-
         /// <summary>
         /// Authenticate packet and return authentication parameters value to the caller
         /// </summary>
-        /// <param name="authKey">Pre-generated authentication key</param>
-        /// <param name="wholeMessage">Message being authenticated</param>
+        /// <param name="authKey">Authentication key (not password)</param>
+        /// <param name="wholeMessage">Message to authenticate</param>
         /// <returns>Authentication parameters value</returns>
         public byte[] Authenticate(byte[] authKey, byte[] wholeMessage)
         {
             byte[] result = new byte[authenticationLength];
-            HMACMD5 md5 = new HMACMD5(authKey);
-            byte[] hash = md5.ComputeHash(wholeMessage);
-            // copy "authenticationLength" bytes of the hash into the wholeMessage
-            Buffer.BlockCopy(hash, 0, result, 0, authenticationLength);
+
+            HMACSHA512 sha = new HMACSHA512(authKey);
+            byte[] hash = sha.ComputeHash(wholeMessage);
+            // copy "authentication lenght" bytes of the hash into the wholeMessage
+            for (int i = 0; i < authenticationLength; i++)
+            {
+                result[i] = hash[i];
+            }
+            sha.Clear(); // release resources
             return result;
         }
-
         /// <summary>
-        /// Verifies correct MD5 authentication of the frame. Prior to calling this method, you have to extract authentication
+        /// Verifies correct SHA-512 authentication of the frame. Prior to calling this method, you have to extract authentication
         /// parameters from the wholeMessage and reset authenticationParameters field in the USM information block to 12 0x00
         /// values.
         /// </summary>
@@ -80,9 +85,10 @@ namespace SnmpSharpNet
         public bool AuthenticateIncomingMsg(byte[] userPassword, byte[] engineId, byte[] authenticationParameters, MutableByte wholeMessage)
         {
             byte[] authKey = PasswordToKey(userPassword, engineId);
-            HMACMD5 md5 = new HMACMD5(authKey);
-            byte[] hash = md5.ComputeHash(wholeMessage, 0, wholeMessage.Length);
+            HMACSHA512 sha = new HMACSHA512(authKey);
+            byte[] hash = sha.ComputeHash(wholeMessage);
             MutableByte myhash = new MutableByte(hash, authenticationLength);
+            sha.Clear(); // release resources
             if (myhash.Equals(authenticationParameters))
             {
                 return true;
@@ -90,7 +96,7 @@ namespace SnmpSharpNet
             return false;
         }
         /// <summary>
-        /// Verify MD5 authentication of a packet.
+        /// Verify SHA-512 authentication of a packet.
         /// </summary>
         /// <param name="authKey">Authentication key (not password)</param>
         /// <param name="authenticationParameters">Authentication parameters extracted from the packet being authenticated</param>
@@ -98,9 +104,10 @@ namespace SnmpSharpNet
         /// <returns>True on authentication success, otherwise false</returns>
         public bool AuthenticateIncomingMsg(byte[] authKey, byte[] authenticationParameters, MutableByte wholeMessage)
         {
-            HMACMD5 md5 = new HMACMD5(authKey);
-            byte[] hash = md5.ComputeHash(wholeMessage, 0, wholeMessage.Length);
+            HMACSHA512 sha = new HMACSHA512(authKey);
+            byte[] hash = sha.ComputeHash(wholeMessage);
             MutableByte myhash = new MutableByte(hash, authenticationLength);
+            sha.Clear(); // release resources
             if (myhash.Equals(authenticationParameters))
             {
                 return true;
@@ -110,7 +117,7 @@ namespace SnmpSharpNet
         /// <summary>
         /// Convert user password to acceptable authentication key.
         /// </summary>
-        /// <param name="userPassword">Authentication password</param>
+        /// <param name="userPassword">User password</param>
         /// <param name="engineID">Authoritative engine id</param>
         /// <returns>Localized authentication key</returns>
         /// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
@@ -118,35 +125,36 @@ namespace SnmpSharpNet
         {
             // key length has to be at least 8 bytes long (RFC3414)
             if (userPassword == null || userPassword.Length < 8)
-            {
                 throw new SnmpAuthenticationException("Secret key is too short.");
-            }
 
             int password_index = 0;
             int count = 0;
-            MD5 md5 = new MD5CryptoServiceProvider();
+            SHA512 sha = new SHA512CryptoServiceProvider();
 
+            /* Use while loop until we've done 1 Megabyte */
             byte[] sourceBuffer = new byte[1048576];
             byte[] buf = new byte[64];
             while (count < 1048576)
             {
                 for (int i = 0; i < 64; ++i)
                 {
+                    // Take the next octet of the password, wrapping
+                    // to the beginning of the password as necessary.
                     buf[i] = userPassword[password_index++ % userPassword.Length];
                 }
                 Buffer.BlockCopy(buf, 0, sourceBuffer, count, buf.Length);
                 count += 64;
             }
 
-            byte[] digest = md5.ComputeHash(sourceBuffer);
+            byte[] digest = sha.ComputeHash(sourceBuffer);
 
             MutableByte tmpbuf = new MutableByte();
             tmpbuf.Append(digest);
             tmpbuf.Append(engineID);
             tmpbuf.Append(digest);
-            byte[] key = md5.ComputeHash(tmpbuf);
-
-            return key;
+            byte[] res = sha.ComputeHash(tmpbuf);
+            sha.Clear(); // release resources
+            return res;
         }
 
         /// <summary>
@@ -166,11 +174,11 @@ namespace SnmpSharpNet
         }
 
         /// <summary>
-        /// Return protocol name.
+        /// Return authentication protocol name
         /// </summary>
         public string Name
         {
-            get { return "HMAC-MD5"; }
+            get { return "HMAC-SHA512"; }
         }
         /// <summary>
         /// Compute hash using authentication protocol.
@@ -181,9 +189,9 @@ namespace SnmpSharpNet
         /// <returns>Hash value</returns>
         public byte[] ComputeHash(byte[] data, int offset, int count)
         {
-            MD5 md5 = new MD5CryptoServiceProvider();
-            byte[] res = md5.ComputeHash(data, offset, count);
-            md5.Clear();
+            SHA512 sha = new SHA512CryptoServiceProvider();
+            byte[] res = sha.ComputeHash(data, offset, count);
+            sha.Clear();
             return res;
         }
     }
