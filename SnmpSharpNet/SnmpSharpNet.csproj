@@ -2,18 +2,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Authors>Peter Harrison</Authors>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
     <PackageId>SnmpSharpNetSHA2</PackageId>
-    <PackageLicenseUrl>https://www.gnu.org/licenses/lgpl.txt</PackageLicenseUrl>
+    <PackageLicenseFile>lgpl.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/PrhCertero/SnmpSharpNetSHA2</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>Available for .Net Standard</PackageReleaseNotes>
     <PackageTags>snmpsharpnet snmp#net snmp netstandard</PackageTags>
     <Product>Snmp#Net</Product>
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/PrhCertero/SnmpSharpNetSHA2</RepositoryUrl>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.10.0</Version>
+    <Version>0.11.0</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\netstandard2.0\SnmpSharpNet.xml</DocumentationFile>
@@ -21,4 +23,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\netstandard2.0\SnmpSharpNet.xml</DocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\lgpl.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>

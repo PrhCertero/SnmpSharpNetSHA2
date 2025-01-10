@@ -55,6 +55,18 @@ namespace SnmpSharpNet
             {
                 return new AuthenticationSHA1();
             }
+            else if (authProtocol == AuthenticationDigests.SHA256)
+            {
+                return new AuthenticationSHA256();
+            }
+            else if (authProtocol == AuthenticationDigests.SHA384)
+            {
+                return new AuthenticationSHA384();
+            }
+            else if (authProtocol == AuthenticationDigests.SHA512)
+            {
+                return new AuthenticationSHA512();
+            }
 
             return null;
         }
